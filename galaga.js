@@ -1,5 +1,6 @@
 var paused = false;
 var gameStarted = false;
+var betweenRounds = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   spawnClouds();
@@ -152,7 +153,7 @@ var enemyOffset = 40;
 var enemyMoveSpeed = 100;
 
 function initiateRoundOrchestration() {
-  showRoundBanner();
+  showRoundBanner(`Round ${roundNumber}`);
 
   setTimeout(() => {
     spawnWave();
@@ -166,19 +167,22 @@ function hideRoundBanner() {
   roundBanner.style.display = "none";
 }
 
-function showRoundBanner() {
+function showRoundBanner(text) {
   const roundBanner = document.getElementById("roundBanner");
   const roundText = document.getElementById("roundText");
 
-  roundText.textContent = `Round ${roundNumber}`;
+  roundText.textContent = text;
   roundBanner.style.display = "flex";
 }
 
 function spawnWave() {
-  if (roundNumber === 1) {
-    for (let i = 0; i <= 10; i++) {
-      spawnEnemy(i);
-    }
+  betweenRounds = false;
+  for (let r = 0; r <= roundNumber; r++) {
+    setTimeout(() => {
+      for (let i = 0; i <= 10; i++) {
+        spawnEnemy(i);
+      }
+    }, 2000);
   }
 }
 
@@ -216,7 +220,6 @@ function spawnEnemy(index) {
 }
 
 function enemyMoveBasic(enemy, interval, bounds, id) {
-  console.log("Enemy", enemy);
   try {
     const top = parseFloat(getComputedStyle(enemy).top);
     const bottom = bounds.height;
@@ -246,7 +249,6 @@ function checkBulletOverlap(bullet) {
       ((e.top <= b.bottom && b.bottom <= e.bottom) ||
         (e.top <= b.top && b.top <= e.bottom))
     ) {
-      console.log("Overlap");
       updateScore(e.score);
       toRemove.push(e.id);
     }
@@ -255,10 +257,15 @@ function checkBulletOverlap(bullet) {
   activeEnemies = activeEnemies.filter((enemy) => !toRemove.includes(enemy.id));
 
   toRemove.forEach((id) => {
-    console.log("Removing");
     const enemy = document.getElementById(id);
     enemy.remove();
   });
+
+  if (activeEnemies.length === 0 && !betweenRounds) {
+    bullet.remove();
+    betweenRounds = true;
+    endRound();
+  }
 }
 
 function updateScore(points) {
@@ -268,7 +275,6 @@ function updateScore(points) {
 }
 
 function togglePause() {
-  console.log("Toggled Pause");
   paused = !paused;
 
   const menu = document.getElementById("pauseMenu");
@@ -277,4 +283,19 @@ function togglePause() {
   } else {
     menu.style.display = "none";
   }
+}
+
+function endRound() {
+  showRoundBanner("Cleared");
+  setTimeout(() => {
+    roundNumber += 1;
+    showRoundBanner(`Round: ${roundNumber}`);
+    setTimeout(() => {
+      hideRoundBanner();
+      spawnWave();
+    }, 5000);
+  }, 2000);
+}
+
+function toggleSettings() {
 }
