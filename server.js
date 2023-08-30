@@ -13,8 +13,15 @@ const requestListener = function (req, res) {
       res.end(contents);
     });
   } else {
-    fs.readFile(`.${req.url}`).then((contents) => {
-      const extension = path.extname(req.url);
+    const assets = ['.png']
+    const extension = path.extname(req.url);
+    let filePath = `./${req.url}`
+
+    if (assets.includes(extension)) {
+      filePath = `./assets/${req.url}`;
+    }
+
+    fs.readFile(filePath).then((contents) => {
       switch (extension) {
         case ".js":
           res.setHeader("Content-Type", "application/javascript");
