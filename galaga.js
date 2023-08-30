@@ -1,10 +1,20 @@
 var paused = false;
 var gameStarted = false;
 var betweenRounds = false;
+var enemyCodex;
 
 document.addEventListener("DOMContentLoaded", () => {
   spawnClouds();
+  loadCodex();
 });
+
+function loadCodex() {
+  fetch("./enemy-layout.json")
+    .then((result) => result.json())
+    .then((result) => {
+      this.enemyCodex = result;
+    });
+}
 
 function spawnClouds() {
   const rootElement = document.getElementById("root");
@@ -50,10 +60,9 @@ let bulletSpeed = 10;
 function play() {
   const mainMenu = document.getElementById("mainMenu");
   mainMenu.style.display = "none";
-  gameStarted = true;
 
   spawnPlayer();
-  initiateRoundOrchestration();
+  initiateGameLoop();
 }
 
 function spawnPlayer() {
@@ -147,18 +156,27 @@ var roundNumber = 1;
 var score = 0;
 var enemyNumber = 1;
 var activeEnemies = [];
-var aliveEnemyCount = 0;
+var remainingEnemies = 0;
 var enemyWidth = 40;
 var enemyOffset = 40;
-var enemyMoveSpeed = 100;
+var enemyMoveSpeed = 10;
 
-function initiateRoundOrchestration() {
+function initiateGameLoop() {
+  gameStarted = true;
+  remainingEnemies = getRoundEnemyCount(roundNumber);
   showRoundBanner(`Round ${roundNumber}`);
 
   setTimeout(() => {
     spawnWave();
     hideRoundBanner();
   }, 5000);
+}
+
+function getRoundEnemyCount(roundNumber) {
+  const matrix = enemyCodex[roundNumber]['enemyLayout'];
+  let totalEnemies = 0;
+  matrix.forEach((dimension) => (totalEnemies += dimension.length));
+  return totalEnemies;
 }
 
 function hideRoundBanner() {
@@ -177,23 +195,24 @@ function showRoundBanner(text) {
 
 function spawnWave() {
   betweenRounds = false;
-  for (let r = 0; r <= roundNumber; r++) {
-    setTimeout(() => {
-      for (let i = 0; i <= 10; i++) {
-        spawnEnemy(i);
-      }
-    }, 2000);
+  const enemyMap = enemyCodex[roundNumber]['enemyLayout'];
+
+  for (let r = 0; r < enemyMap.length; r++) {
+    for (let i = 0; i < enemyMap[r].length; i++) {
+      spawnEnemy(i, r, enemyMap[r][i]);
+    }
   }
 }
 
-function spawnEnemy(index) {
+function spawnEnemy(index, row, type) {
   const gameArea = document.getElementById("root");
   const bounds = gameArea.getBoundingClientRect();
   const padding = (bounds.width - (enemyWidth * 5 + enemyOffset * 4)) / 2;
   let enemy = document.createElement("div");
   const id = `Enemy${enemyNumber}`;
   const left = padding + index * 5 + index * enemyOffset;
-  const top = 0;
+
+  const top = row * (-45);
 
   enemy.id = id;
   enemy.className = "enemy-ship";
@@ -201,7 +220,6 @@ function spawnEnemy(index) {
   enemy.style.top = top + "px";
 
   enemyNumber += 1;
-  aliveEnemyCount += 1;
   activeEnemies.push({
     id: id,
     top: top,
@@ -215,7 +233,7 @@ function spawnEnemy(index) {
 
   const moveInterval = setInterval(
     () => enemyMoveBasic(enemy, moveInterval, bounds, id),
-    2000
+    500
   );
 }
 
@@ -251,6 +269,8 @@ function checkBulletOverlap(bullet) {
     ) {
       updateScore(e.score);
       toRemove.push(e.id);
+      remainingEnemies -= 1;
+      bullet.remove();
     }
   });
 
@@ -261,7 +281,7 @@ function checkBulletOverlap(bullet) {
     enemy.remove();
   });
 
-  if (activeEnemies.length === 0 && !betweenRounds) {
+  if (remainingEnemies === 0 && !betweenRounds) {
     bullet.remove();
     betweenRounds = true;
     endRound();
@@ -289,6 +309,7 @@ function endRound() {
   showRoundBanner("Cleared");
   setTimeout(() => {
     roundNumber += 1;
+    remainingEnemies = getRoundEnemyCount(roundNumber)
     showRoundBanner(`Round: ${roundNumber}`);
     setTimeout(() => {
       hideRoundBanner();
@@ -297,5 +318,4 @@ function endRound() {
   }, 2000);
 }
 
-function toggleSettings() {
-}
+function toggleSettings() {}

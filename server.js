@@ -28,6 +28,9 @@ const requestListener = function (req, res) {
         case ".ico":
           res.setHeader("Content-Type", "image/webp");
           break;
+        case ".json":
+          res.setHeader("Content-Type", "application/json");
+          break;
       }
 
       res.writeHead(200);
