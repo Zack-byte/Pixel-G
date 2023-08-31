@@ -116,9 +116,54 @@ function updatePlayerPosition() {
 
     player.style.top = playerY + "px";
     player.style.left = playerX + "px";
+
+    checkPlayerOverlap(player);
   }
 
   requestAnimationFrame(updatePlayerPosition);
+}
+
+function checkPlayerOverlap(player) {
+  const toRemove = [];
+  const p = player.getBoundingClientRect();
+  activeEnemies.forEach((e) => {
+    if (
+      ((e.left <= p.left && p.left <= e.right) ||
+        (e.left <= p.right && p.right <= e.right)) &&
+      ((e.top <= p.bottom && p.bottom <= e.bottom) ||
+        (e.top <= p.top && p.top <= e.bottom))
+    ) {
+      toRemove.push(e.id);
+      remainingEnemies -= 1;
+    }
+  });
+
+  if (toRemove.length > 0) {
+    const dead = playerHit(25);
+    if (dead) {
+      gameOver();
+    }
+    activeEnemies = activeEnemies.filter(
+      (enemy) => !toRemove.includes(enemy.id)
+    );
+
+    toRemove.forEach((id) => {
+      const enemy = document.getElementById(id);
+      enemy.remove();
+    });
+
+    if (remainingEnemies === 0 && !betweenRounds) {
+      bullet.remove();
+      betweenRounds = true;
+      endRound();
+    }
+  }
+}
+
+function playerHit(hitNumber) {
+  playerHealth -= hitNumber;
+
+  return playerHealth <= 0;
 }
 
 function fire() {
@@ -160,8 +205,10 @@ var remainingEnemies = 0;
 var enemyWidth = 40;
 var enemyOffset = 40;
 var enemyMoveSpeed = 10;
+var playerHealth = 100;
 
 function initiateGameLoop() {
+  paused = false;
   gameStarted = true;
   remainingEnemies = getRoundEnemyCount(roundNumber);
   showRoundBanner(`Round ${roundNumber}`);
@@ -173,7 +220,7 @@ function initiateGameLoop() {
 }
 
 function getRoundEnemyCount(roundNumber) {
-  const matrix = enemyCodex[roundNumber]['enemyLayout'];
+  const matrix = enemyCodex[roundNumber]["enemyLayout"];
   let totalEnemies = 0;
   matrix.forEach((dimension) => (totalEnemies += dimension.length));
   return totalEnemies;
@@ -195,7 +242,7 @@ function showRoundBanner(text) {
 
 function spawnWave() {
   betweenRounds = false;
-  const enemyMap = enemyCodex[roundNumber]['enemyLayout'];
+  const enemyMap = enemyCodex[roundNumber]["enemyLayout"];
 
   for (let r = 0; r < enemyMap.length; r++) {
     for (let i = 0; i < enemyMap[r].length; i++) {
@@ -212,7 +259,7 @@ function spawnEnemy(index, row, type) {
   const id = `Enemy${enemyNumber}`;
   const left = padding + index * 5 + index * enemyOffset;
 
-  const top = row * (-45);
+  const top = row * -45;
 
   enemy.id = id;
   enemy.className = "enemy-ship";
@@ -245,6 +292,7 @@ function enemyMoveBasic(enemy, interval, bounds, id) {
     if (top >= bottom) {
       clearInterval(interval);
       enemy.remove();
+      remainingEnemies -= 1;
     } else if (!paused) {
       const index = activeEnemies.findIndex((item) => item.id === id);
       activeEnemies[index].top = top;
@@ -309,7 +357,7 @@ function endRound() {
   showRoundBanner("Cleared");
   setTimeout(() => {
     roundNumber += 1;
-    remainingEnemies = getRoundEnemyCount(roundNumber)
+    remainingEnemies = getRoundEnemyCount(roundNumber);
     showRoundBanner(`Round: ${roundNumber}`);
     setTimeout(() => {
       hideRoundBanner();
@@ -319,3 +367,57 @@ function endRound() {
 }
 
 function toggleSettings() {}
+
+function gameOver() {
+  addGameOverMenu();
+  gameStarted = false;
+  paused = true;
+}
+
+function addGameOverMenu() {
+  const menu = document.getElementById("gameOverMenu");
+  const scoreLabel = document.getElementById("gameOverScore");
+  scoreLabel.textContent = `Score: ${score}`;
+  menu.style.display = "flex";
+
+}
+
+function removeGameOverMenu() {
+  const menu = document.getElementById("gameOverMenu");
+  menu.style.display = 'none';
+}
+
+function goToMainMenu() {
+  removeActiveEnemies()
+  removePlayer();
+  const mainMenu = document.getElementById("mainMenu");
+  const gameOverMenu = document.getElementById("gameOverMenu");
+
+  gameOverMenu.style.display = "none";
+  mainMenu.style.display = "flex";
+}
+
+function restart() {
+  removeActiveEnemies();
+  removePlayer();
+  score = 0;
+  roundNumber = 1;
+  enemyNumber = 1;
+  activeEnemies = [];
+  remainingEnemies = 0;
+  playerHealth = 100;
+  removeGameOverMenu();
+  spawnPlayer();
+  initiateGameLoop();
+}
+
+function removePlayer() {
+  document.getElementById("player").remove();
+}
+
+function removeActiveEnemies() {
+  activeEnemies.forEach((enemy) => {
+    const e = document.getElementById(enemy.id)
+    e.remove();
+  })
+}

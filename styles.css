@@ -18,13 +18,17 @@ body {
 }
 
 
-.mainMenu, .round-banner, .pause-menu {
+.mainMenu, .round-banner, .pause-menu, .game-over {
     width: 100vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.game-over {
+    display: none;
 }
 
 .round-banner {
