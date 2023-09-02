@@ -98,6 +98,7 @@ function spawnPlayer() {
 }
 
 function updatePlayerPosition() {
+  console.log('', movementSpeed)
   if (!paused) {
     if (keysPressed["w"]) {
       playerY -= movementSpeed;
@@ -420,4 +421,10 @@ function removeActiveEnemies() {
     const e = document.getElementById(enemy.id)
     e.remove();
   })
+
+  activeEnemies = []
 }
+
+
+// This code marks the beginning of multiplayer server connection orchestration
+mpInit()
