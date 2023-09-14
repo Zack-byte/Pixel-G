@@ -92,13 +92,27 @@ function spawnPlayer() {
     }
   });
 
+  document.addEventListener("mousemove", (event) => {
+    console.log("Moving");
+    let player = document.getElementById("player");
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+    const elementX = player.offsetLeft + player.offsetWidth / 2;
+    const elementY = player.offsetTop + player.offsetHeight / 2;
+
+    const angleRad = Math.atan2(mouseY - elementY, mouseX - elementX);
+    const angleDeg = (angleRad * 45 ) / Math.PI;
+
+    player.style.transform = `rotate(${angleDeg}deg)`;
+  })
+
   document.addEventListener("keyup", (event) => {
     keysPressed[event.key.toLowerCase()] = false;
   });
 }
 
 function updatePlayerPosition() {
-  console.log('', movementSpeed)
+  console.log("", movementSpeed);
   if (!paused) {
     if (keysPressed["w"]) {
       playerY -= movementSpeed;
@@ -163,8 +177,13 @@ function checkPlayerOverlap(player) {
 
 function playerHit(hitNumber) {
   playerHealth -= hitNumber;
-
+  updateHealthUI();
   return playerHealth <= 0;
+}
+
+function updateHealthUI() {
+  let health = document.getElementById("HealthBar");
+  health.value = playerHealth;
 }
 
 function fire() {
@@ -180,8 +199,15 @@ function fire() {
   playerShotsFired += 1;
 
   gameArea.append(bullet);
+  playAudio('shot');
   const interval = setInterval(() => bulletMove(bullet, interval), 10);
 }
+
+function playAudio(sound) {
+  var audio = new Audio(`${sound}.mp3`);
+  audio.play();
+}
+
 
 function bulletMove(bullet, interval) {
   const top = getComputedStyle(bullet).top;
@@ -328,6 +354,7 @@ function checkBulletOverlap(bullet) {
   toRemove.forEach((id) => {
     const enemy = document.getElementById(id);
     enemy.remove();
+    playAudio('explosion')
   });
 
   if (remainingEnemies === 0 && !betweenRounds) {
@@ -355,6 +382,7 @@ function togglePause() {
 }
 
 function endRound() {
+  playAudio('nootnoot');
   showRoundBanner("Cleared");
   setTimeout(() => {
     roundNumber += 1;
@@ -380,16 +408,15 @@ function addGameOverMenu() {
   const scoreLabel = document.getElementById("gameOverScore");
   scoreLabel.textContent = `Score: ${score}`;
   menu.style.display = "flex";
-
 }
 
 function removeGameOverMenu() {
   const menu = document.getElementById("gameOverMenu");
-  menu.style.display = 'none';
+  menu.style.display = "none";
 }
 
 function goToMainMenu() {
-  removeActiveEnemies()
+  removeActiveEnemies();
   removePlayer();
   const mainMenu = document.getElementById("mainMenu");
   const gameOverMenu = document.getElementById("gameOverMenu");
@@ -407,6 +434,7 @@ function restart() {
   activeEnemies = [];
   remainingEnemies = 0;
   playerHealth = 100;
+  updateHealthUI();
   removeGameOverMenu();
   spawnPlayer();
   initiateGameLoop();
@@ -418,13 +446,12 @@ function removePlayer() {
 
 function removeActiveEnemies() {
   activeEnemies.forEach((enemy) => {
-    const e = document.getElementById(enemy.id)
+    const e = document.getElementById(enemy.id);
     e.remove();
-  })
+  });
 
-  activeEnemies = []
+  activeEnemies = [];
 }
 
-
 // This code marks the beginning of multiplayer server connection orchestration
-mpInit()
+mpInit();

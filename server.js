@@ -13,7 +13,7 @@ const requestListener = function (req, res) {
       res.end(contents);
     });
   } else {
-    const assets = ['.png']
+    const assets = ['.png', '.mp3']
     const extension = path.extname(req.url);
     let filePath = `./${req.url}`
 
@@ -37,6 +37,9 @@ const requestListener = function (req, res) {
           break;
         case ".json":
           res.setHeader("Content-Type", "application/json");
+          break;
+        case ".mp3":
+          res.setHeader("Content-Type", "audio/mpeg");
           break;
       }
 

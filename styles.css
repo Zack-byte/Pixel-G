@@ -94,6 +94,28 @@ button:hover {
     background-repeat: no-repeat;
 }
 
+
+.round-banner {
+    background-image: url('./nootnoot.png');
+    top: 50vh;
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    color: white;
+}
+
+@keyframes zoom {
+    0% {
+        width: 5px;
+        height: 5px;
+    }
+
+    100% {
+        width: 500px;
+        height: 500px;
+    }
+}
+
 .score {
     position: absolute;
     bottom: 20px;
@@ -106,4 +128,10 @@ button:hover {
 
 .pause-menu {
     display: none;
+}
+
+.health-bar {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
 }
