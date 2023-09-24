@@ -1,6 +1,7 @@
 var paused = false;
 var gameStarted = false;
 var betweenRounds = false;
+var globalMousePos = { x: 0, y: 0 };
 var enemyCodex;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -58,11 +59,14 @@ var playerShotsFired = 0;
 let bulletSpeed = 10;
 
 function play() {
-  const mainMenu = document.getElementById("mainMenu");
-  mainMenu.style.display = "none";
-
+  hideMainMenu();
   spawnPlayer();
   initiateGameLoop();
+}
+
+function hideMainMenu() {
+  const mainMenu = document.getElementById("mainMenu");
+  mainMenu.style.display = "none";
 }
 
 function spawnPlayer() {
@@ -82,11 +86,10 @@ function spawnPlayer() {
   document.addEventListener("keydown", (event) => {
     keysPressed[event.key.toLowerCase()] = true;
 
-    if (!paused) {
-      if (event.code === "Space") {
-        fire();
-      }
+    if (event.code === "Space") {
+      fire();
     }
+
     if (event.key === "p" && gameStarted) {
       togglePause();
     }
@@ -94,25 +97,34 @@ function spawnPlayer() {
 
   document.addEventListener("mousemove", (event) => {
     console.log("Moving");
-    let player = document.getElementById("player");
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
-    const elementX = player.offsetLeft + player.offsetWidth / 2;
-    const elementY = player.offsetTop + player.offsetHeight / 2;
+    globalMousePos = { x: event.clientX, y: event.clientY };
 
-    const angleRad = Math.atan2(mouseY - elementY, mouseX - elementX);
-    const angleDeg = (angleRad * 45 ) / Math.PI;
+    updatePlayerFace();
+  });
 
-    player.style.transform = `rotate(${angleDeg}deg)`;
-  })
+  document.addEventListener("mousedown", (event) => {
+    fire();
+  });
 
   document.addEventListener("keyup", (event) => {
     keysPressed[event.key.toLowerCase()] = false;
   });
 }
 
+function updatePlayerFace() {
+  let player = document.getElementById("player");
+  const mouseX = globalMousePos.x;
+  const mouseY = globalMousePos.y;
+  const elementX = player.offsetLeft + player.offsetWidth / 2;
+  const elementY = player.offsetTop + player.offsetHeight / 2;
+
+  const angleRad = Math.atan2(mouseY - elementY, mouseX - elementX);
+  const angleDeg = (angleRad * 180) / Math.PI + 90;
+
+  player.style.transform = `rotate(${angleDeg}deg)`;
+}
+
 function updatePlayerPosition() {
-  console.log("", movementSpeed);
   if (!paused) {
     if (keysPressed["w"]) {
       playerY -= movementSpeed;
@@ -133,6 +145,7 @@ function updatePlayerPosition() {
     player.style.left = playerX + "px";
 
     checkPlayerOverlap(player);
+    updatePlayerFace();
   }
 
   requestAnimationFrame(updatePlayerPosition);
@@ -196,11 +209,31 @@ function fire() {
   bullet.style.top = playerY + "px";
   bullet.style.left = playerX + "px";
 
+  const x1 = playerX;
+  const y1 = playerY;
+
+  const x2 = globalMousePos.x;
+  const y2 = globalMousePos.y;
+
+  const slope = (y2 - y1) / (x2 - x1);
+  const yintercept = -1 * (slope * x1) + y1;
+
+  const rise = y2 - y1;
+  const run = x2 - x1;
+  console.log(x1);
+  console.log(y1);
+  console.log(x2);
+  console.log(y2);
+  console.log(slope);
+
   playerShotsFired += 1;
 
   gameArea.append(bullet);
-  playAudio('shot');
-  const interval = setInterval(() => bulletMove(bullet, interval), 10);
+  playAudio("shot");
+  const interval = setInterval(
+    () => bulletMove(bullet, interval, slope, yintercept),
+    10
+  );
 }
 
 function playAudio(sound) {
@@ -208,17 +241,20 @@ function playAudio(sound) {
   audio.play();
 }
 
-
-function bulletMove(bullet, interval) {
+function bulletMove(bullet, interval, slope, yintercept) {
   const top = getComputedStyle(bullet).top;
+  const left = getComputedStyle(bullet).left;
   const bulletTop = parseFloat(top);
+  const bulletLeft = parseFloat(left);
 
   if (bulletTop <= 0) {
     bullet.remove();
     clearInterval(interval);
     return;
   } else if (!paused) {
-    bullet.style.top = bulletTop - bulletSpeed + "px";
+    const x = bulletLeft + bulletSpeed;
+    bullet.style.left = x;
+    bullet.style.top = slope * x + yintercept + "px";
     checkBulletOverlap(bullet);
   }
 }
@@ -354,7 +390,7 @@ function checkBulletOverlap(bullet) {
   toRemove.forEach((id) => {
     const enemy = document.getElementById(id);
     enemy.remove();
-    playAudio('explosion')
+    playAudio("explosion");
   });
 
   if (remainingEnemies === 0 && !betweenRounds) {
@@ -382,7 +418,7 @@ function togglePause() {
 }
 
 function endRound() {
-  playAudio('nootnoot');
+  playAudio("nootnoot");
   showRoundBanner("Cleared");
   setTimeout(() => {
     roundNumber += 1;
@@ -453,5 +489,100 @@ function removeActiveEnemies() {
   activeEnemies = [];
 }
 
+function showMultiPlayerMenu() {
+  const menu = document.getElementById("mpMenu");
+  menu.style.display = "flex";
+}
+
+function hideMultiPlayerMenu() {
+  const menu = document.getElementById("mpMenu");
+  menu.style.display = "none";
+}
+
+function updateMpStatus(status) {
+  const label = document.getElementById("mpStatus");
+  label.textContent = status;
+  label.style.display = "flex";
+}
+
+function hideMpStatus() {
+  const label = document.getElementById("mpStatus");
+  label.style.display = "none";
+}
+
+function showUserInput() {
+  const input = document.getElementById("inputContainer");
+  input.style.display = "block";
+}
+
+function hideUserInput() {
+  const input = document.getElementById("inputContainer");
+  input.style.display = "none";
+}
+
+var user_id = "";
+
 // This code marks the beginning of multiplayer server connection orchestration
-mpInit();
+// CALLED VIA HTML
+function mpInit() {
+  hideMainMenu();
+  showMultiPlayerMenu();
+  showUserInput();
+}
+
+function initiateSearch() {
+  user_id = getUserId();
+  hideUserInput();
+  updateMpStatus("Connecting...");
+  initConnection("http://localhost:8000/register").then((data) => {
+    console.log("data", data);
+    openWebSocketConnection(data.url);
+  });
+}
+
+function getUserId() {
+  return document.getElementById("userId").value;
+}
+
+function openWebSocketConnection(url) {
+  updateMpStatus("Searching For Opponent...");
+  const socket = new WebSocket(url);
+  socket.onmessage = (event) => {
+    console.log("Incoming", event);
+    handleSocketMessage(event);
+  };
+}
+
+async function initConnection(url) {
+  const response = await fetch(url, {
+    method: "POST",
+    mode: "cors",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    body: JSON.stringify({ user_id }),
+  });
+  return response.json();
+}
+
+function handleSocketMessage(event) {
+  console.log("Socket Event Received", event);
+  const message = JSON.parse(event.data);
+
+  if (message?.found) {
+    handleOpponentFound(message.opponent_id);
+  }
+}
+
+function handleOpponentFound(id) {
+  updateMpStatus("Opponent Found!");
+
+  setTimeout(() => {
+    spawnPlayer();
+    hideMpStatus();
+  }, 3000);
+
+  spawnPlayer();
+}

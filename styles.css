@@ -18,13 +18,17 @@ body {
 }
 
 
-.mainMenu, .round-banner, .pause-menu, .game-over {
+.mainMenu, .round-banner, .pause-menu, .game-over, .mp-menu {
     width: 100vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.mainMenu {
+    cursor: normal; 
 }
 
 .game-over {
@@ -126,10 +130,17 @@ button:hover {
 
 }
 
-.pause-menu {
+.pause-menu, .mp-menu {
+    cursor: normal;
     display: none;
 }
 
+.mpStatus {
+    display: none;
+}
+.hide {
+    display: none;
+}
 .health-bar {
     position: absolute;
     bottom: 20px;

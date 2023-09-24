@@ -11,10 +11,21 @@
   <body>
     <script src="galaga.js" type="application/javascript"></script>
     <div id="root" class="root">
+      <audio id="audio" loop>
+        <source src="./backgroundtunes.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
       <div id="mainMenu" class="mainMenu">
         <h1>Pixel G</h1>
         <button onclick="play()">Play >>></button>
         <button onclick="mpInit()">MultiPlayer</button>
+      </div>
+      <div id="mpMenu" class="mp-menu">
+        <h1 id="mpStatus">Connecting...</h1>
+        <div id="inputContainer" class="hide">
+          <input id="userId" placeholder="Enter Username" type="text">
+          <button onclick="initiateSearch()">Play >>></button>
+        </div> 
       </div>
       <div id="pauseMenu"class="pause-menu">
         <h1>Paused</h1>
