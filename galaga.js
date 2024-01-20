@@ -3,11 +3,49 @@ var gameStarted = false;
 var betweenRounds = false;
 var globalMousePos = { x: 0, y: 0 };
 var enemyCodex;
+var midPointY = 0;
+var midPointX = 0;
+var scaleWidth = 0;
+var scaleHeight = 0;
+var normalizedHeight = 1080;
+var normalizedWidth = 1920;
+var isMultiplayer = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   spawnClouds();
   loadCodex();
+  // Get the current screen width and height
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+
+  // Calculate the scale factors for width and height
+  scaleWidth = screenWidth / normalizedWidth;
+  scaleHeight = screenHeight / normalizedHeight;
+  midPointY = window.innerHeight / 2;
+  midPointX = window.innerWidth / 2;
+  console.log(`MidPointY ${midPointY}, midPointX ${midPointX}`);
 });
+
+function getScaleFactor() {
+  // Get the current screen width and height
+  const screenWidth =
+    window.innerWidth ||
+    document.documentElement.clientWidth ||
+    document.body.clientWidth;
+  const screenHeight =
+    window.innerHeight ||
+    document.documentElement.clientHeight ||
+    document.body.clientHeight;
+
+  // Calculate the scale factors for width and height
+  const scaleWidth = screenWidth / 1920;
+  const scaleHeight = screenHeight / 1080;
+
+  console.log(`Calculating Scale ${scaleWidth}, ${scaleHeight}`);
+
+  // Return the minimum of the two scale factors to maintain aspect ratio
+  return Math.max(scaleWidth, scaleHeight);
+}
 
 function loadCodex() {
   fetch("./enemy-layout.json")
@@ -52,6 +90,7 @@ function spawnClouds() {
 
 var playerX = 0;
 var playerY = 0;
+var playerRotation = 0;
 const movementSpeed = 5;
 const keysPressed = {};
 
@@ -59,8 +98,9 @@ var playerShotsFired = 0;
 let bulletSpeed = 10;
 
 function play() {
+  isMultiplayer = false;
   hideMainMenu();
-  spawnPlayer();
+  spawnPlayer(true, "player");
   initiateGameLoop();
 }
 
@@ -69,46 +109,59 @@ function hideMainMenu() {
   mainMenu.style.display = "none";
 }
 
-function spawnPlayer() {
+function spawnPlayer(isPlayerControlled = true, playerId) {
   const gameArea = document.getElementById("root");
   const player = document.createElement("div");
   const bounds = gameArea.getBoundingClientRect();
 
-  player.id = "player";
+  player.id = playerId;
   player.className = "player";
-  playerX = bounds.width / 2;
-  playerY = bounds.height - 50;
+  player.style.width = 40 * scaleWidth + "px";
+  player.style.height = 40 * scaleHeight + "px";
+
+  if (isPlayerControlled) {
+    console.log("Player Bounds", bounds);
+    playerX = bounds.width / 2;
+    playerY = bounds.height - 50;
+  }
+  if (!isPlayerControlled) {
+    console.log("Opponent Bounds", bounds);
+    opponentX = normalizedWidth / 2;
+    opponentY = normalizedHeight - 50;
+  }
 
   gameArea.appendChild(player);
 
   // Start the continuous update loop
-  updatePlayerPosition(); // To track which keys are pressed
-  document.addEventListener("keydown", (event) => {
-    keysPressed[event.key.toLowerCase()] = true;
+  updatePlayerPosition(isPlayerControlled, playerId); // To track which keys are pressed
 
-    if (event.code === "Space") {
-      fire();
-    }
+  if (isPlayerControlled) {
+    document.addEventListener("keydown", (event) => {
+      keysPressed[event.key.toLowerCase()] = true;
 
-    if (event.key === "p" && gameStarted) {
-      togglePause();
-    }
-  });
+      if (event.code === "Space") {
+        fire(true);
+      }
 
-  document.addEventListener("mousemove", (event) => {
-    console.log("Moving");
-    globalMousePos = { x: event.clientX, y: event.clientY };
+      if (event.key === "p" && gameStarted) {
+        togglePause();
+      }
+    });
 
-    updatePlayerFace();
-  });
+    document.addEventListener("mousemove", (event) => {
+      globalMousePos = { x: event.clientX, y: event.clientY };
 
-  document.addEventListener("mousedown", (event) => {
-    fire();
-  });
+      //updatePlayerFace();
+    });
 
-  document.addEventListener("keyup", (event) => {
-    keysPressed[event.key.toLowerCase()] = false;
-  });
+    document.addEventListener("mousedown", (event) => {
+      fire(true);
+    });
+
+    document.addEventListener("keyup", (event) => {
+      keysPressed[event.key.toLowerCase()] = false;
+    });
+  }
 }
 
 function updatePlayerFace() {
@@ -124,31 +177,62 @@ function updatePlayerFace() {
   player.style.transform = `rotate(${angleDeg}deg)`;
 }
 
-function updatePlayerPosition() {
+function updatePlayerPosition(isPlayerControlled, playerId) {
   if (!paused) {
-    if (keysPressed["w"]) {
-      playerY -= movementSpeed;
-    }
-    if (keysPressed["s"]) {
-      playerY += movementSpeed;
-    }
-    if (keysPressed["a"]) {
-      playerX -= movementSpeed;
-    }
-    if (keysPressed["d"]) {
-      playerX += movementSpeed;
+    if (isPlayerControlled) {
+      if (keysPressed["w"]) {
+        playerY -= movementSpeed * scaleHeight;
+      }
+      if (keysPressed["s"]) {
+        playerY += movementSpeed * scaleHeight;
+      }
+      if (keysPressed["a"]) {
+        playerX -= movementSpeed * scaleWidth;
+      }
+      if (keysPressed["d"]) {
+        playerX += movementSpeed * scaleWidth;
+      }
     }
 
-    const player = document.getElementById("player");
+    const player = document.getElementById(playerId);
+    let top = "";
+    let left = "";
+    let rotation = 0;
 
-    player.style.top = playerY + "px";
-    player.style.left = playerX + "px";
+    if (isPlayerControlled) {
+      top = playerY + "px";
+      left = playerX + "px";
+      rotation = playerRotation;
+    }
+
+    if (!isPlayerControlled) {
+      top = window.innerHeight - opponentY * scaleHeight + "px";
+      left = window.innerWidth - opponentX * scaleWidth + "px";
+      rotation = opponentRotation + 180;
+    }
+
+    player.style.top = top;
+    player.style.left = left;
+    player.style.rotate = `${rotation}deg`;
 
     checkPlayerOverlap(player);
-    updatePlayerFace();
+    //updatePlayerFace();
   }
 
-  requestAnimationFrame(updatePlayerPosition);
+  if (
+    isMultiplayer &&
+    isPlayerControlled &&
+    (keysPressed["w"] ||
+      keysPressed["s"] ||
+      keysPressed["a"] ||
+      keysPressed["d"])
+  ) {
+    sendMpUpdate();
+  }
+
+  requestAnimationFrame(function () {
+    updatePlayerPosition(isPlayerControlled, playerId);
+  });
 }
 
 function checkPlayerOverlap(player) {
@@ -199,39 +283,39 @@ function updateHealthUI() {
   health.value = playerHealth;
 }
 
-function fire() {
+function fire(isPlayer) {
   const gameArea = document.getElementById("root");
   const bullet = document.createElement("div");
   const bulletNumber = `playerbullet${playerShotsFired}`;
 
   bullet.id = bulletNumber;
-  bullet.className = "player-bullet";
-  bullet.style.top = playerY + "px";
-  bullet.style.left = playerX + "px";
+  bullet.className = isPlayer ? "player-bullet" : "enemy-bullet";
+  bullet.style.width = 3 * scaleWidth + "px";
+  bullet.style.height = 20 * scaleHeight + "px";
+  let top = "";
+  let left = "";
 
-  const x1 = playerX;
-  const y1 = playerY;
+  if (isPlayer) {
+    if (isMultiplayer) {
+      sendFireEvent();
+    }
+    top = playerY + "px";
+    left = playerX + "px";
+  }
 
-  const x2 = globalMousePos.x;
-  const y2 = globalMousePos.y;
+  if (!isPlayer) {
+    top = window.innerHeight - opponentY * scaleHeight + "px";
+    left = window.innerWidth - opponentX * scaleWidth + "px";
+  }
 
-  const slope = (y2 - y1) / (x2 - x1);
-  const yintercept = -1 * (slope * x1) + y1;
-
-  const rise = y2 - y1;
-  const run = x2 - x1;
-  console.log(x1);
-  console.log(y1);
-  console.log(x2);
-  console.log(y2);
-  console.log(slope);
+  bullet.style.top = top;
+  bullet.style.left = left;
 
   playerShotsFired += 1;
-
-  gameArea.append(bullet);
   playAudio("shot");
+  gameArea.append(bullet);
   const interval = setInterval(
-    () => bulletMove(bullet, interval, slope, yintercept),
+    () => bulletMove(bullet, interval, isPlayer),
     10
   );
 }
@@ -241,21 +325,28 @@ function playAudio(sound) {
   audio.play();
 }
 
-function bulletMove(bullet, interval, slope, yintercept) {
+function bulletMove(bullet, interval, isPlayer) {
   const top = getComputedStyle(bullet).top;
-  const left = getComputedStyle(bullet).left;
   const bulletTop = parseFloat(top);
-  const bulletLeft = parseFloat(left);
 
-  if (bulletTop <= 0) {
-    bullet.remove();
-    clearInterval(interval);
-    return;
-  } else if (!paused) {
-    const x = bulletLeft + bulletSpeed;
-    bullet.style.left = x;
-    bullet.style.top = slope * x + yintercept + "px";
-    checkBulletOverlap(bullet);
+  if (isPlayer) {
+    if (bulletTop <= 0) {
+      bullet.remove();
+      clearInterval(interval);
+      return;
+    } else if (!paused) {
+      bullet.style.top = bulletTop - bulletSpeed * scaleHeight + "px";
+      checkBulletOverlap(bullet);
+    }
+  } else {
+    if (bulletTop >= normalizedHeight * scaleHeight) {
+      bullet.remove();
+      clearInterval(interval);
+      return;
+    } else if (!paused) {
+      bullet.style.top = bulletTop + bulletSpeed * scaleHeight + "px";
+      checkBulletOverlap(bullet);
+    }
   }
 }
 
@@ -369,8 +460,13 @@ function enemyMoveBasic(enemy, interval, bounds, id) {
 
 function checkBulletOverlap(bullet) {
   const b = bullet.getBoundingClientRect();
-  const toRemove = [];
+  if (!isMultiplayer) {
+    checkEnemyOverlap(b);
+  }
+}
 
+function checkEnemyOverlap(b) {
+  const toRemove = [];
   activeEnemies.forEach((e) => {
     if (
       ((e.left <= b.left && b.left <= e.right) ||
@@ -472,7 +568,7 @@ function restart() {
   playerHealth = 100;
   updateHealthUI();
   removeGameOverMenu();
-  spawnPlayer();
+  spawnPlayer(false, "player");
   initiateGameLoop();
 }
 
@@ -521,6 +617,11 @@ function hideUserInput() {
 }
 
 var user_id = "";
+var opponent_id = "";
+var socket;
+var opponentY = 0;
+var opponentX = 0;
+var opponentRotation = 0;
 
 // This code marks the beginning of multiplayer server connection orchestration
 // CALLED VIA HTML
@@ -535,7 +636,6 @@ function initiateSearch() {
   hideUserInput();
   updateMpStatus("Connecting...");
   initConnection("http://localhost:8000/register").then((data) => {
-    console.log("data", data);
     openWebSocketConnection(data.url);
   });
 }
@@ -546,9 +646,8 @@ function getUserId() {
 
 function openWebSocketConnection(url) {
   updateMpStatus("Searching For Opponent...");
-  const socket = new WebSocket(url);
+  socket = new WebSocket(url);
   socket.onmessage = (event) => {
-    console.log("Incoming", event);
     handleSocketMessage(event);
   };
 }
@@ -568,21 +667,56 @@ async function initConnection(url) {
 }
 
 function handleSocketMessage(event) {
-  console.log("Socket Event Received", event);
   const message = JSON.parse(event.data);
+  console.log("Message received", message);
 
   if (message?.found) {
     handleOpponentFound(message.opponent_id);
   }
+
+  if (message?.player_x) {
+    handleGamePacket(message);
+  }
+
+  if (message?.bullet_type) {
+    fire(false);
+  }
 }
 
 function handleOpponentFound(id) {
-  updateMpStatus("Opponent Found!");
+  opponent_id = id;
+  isMultiplayer = true;
 
   setTimeout(() => {
-    spawnPlayer();
+    spawnPlayer(true, user_id);
+    spawnPlayer(false, opponent_id);
     hideMpStatus();
   }, 3000);
+}
 
-  spawnPlayer();
+function sendMpUpdate() {
+  if (socket) {
+    let playerData = {
+      opponent_id,
+      player_x: playerX / scaleWidth,
+      player_y: playerY / scaleHeight,
+    };
+    socket.send(JSON.stringify(playerData));
+  }
+}
+
+function sendFireEvent() {
+  if (socket) {
+    let bulletData = {
+      opponent_id,
+      bullet_type: "standard",
+    };
+    socket.send(JSON.stringify(bulletData));
+  }
+}
+
+function handleGamePacket(packet) {
+  opponentX = packet.player_x;
+  opponentY = packet.player_y;
+  opponentRotation = 0;
 }

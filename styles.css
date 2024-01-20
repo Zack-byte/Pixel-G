@@ -25,7 +25,14 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
 }
+
+.flex {
+    display: flex;
+    gap: 1rem;
+}
+
 
 .mainMenu {
     cursor: normal; 
@@ -79,13 +86,19 @@ button:hover {
     background-repeat: no-repeat;
 }
 
-.player-bullet {
+.player-bullet, .enemy-bullet {
     width: 3px;
     height: 20px;
     position: absolute;
     background: lime;
     border: 2px solid black;
 }
+
+.enemy-bullet {
+    background: red;
+}
+
+
 
 .cloud {
     top: 0;

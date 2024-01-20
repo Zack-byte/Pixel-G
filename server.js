@@ -2,10 +2,11 @@ const http = require("http");
 const fs = require("fs").promises;
 const path = require("path");
 
-const host = "localhost";
+const host = "0.0.0.0";
 const port = "8080";
 
 const requestListener = function (req, res) {
+  console.log("Received Request", req);
   if (req.url === "/" || requestListener.url === "/index.html") {
     fs.readFile("./index.html").then((contents) => {
       res.setHeader("Content-Type", "text/html");
@@ -13,9 +14,9 @@ const requestListener = function (req, res) {
       res.end(contents);
     });
   } else {
-    const assets = ['.png', '.mp3']
+    const assets = [".png", ".mp3"];
     const extension = path.extname(req.url);
-    let filePath = `./${req.url}`
+    let filePath = `./${req.url}`;
 
     if (assets.includes(extension)) {
       filePath = `./assets/${req.url}`;
