@@ -1,6 +1,6 @@
-const http = require("http");
-const fs = require("fs").promises;
-const path = require("path");
+import http from "http";
+import { promises as fs } from "fs";
+import path from "path";
 
 const host = "0.0.0.0";
 const port = "8080";

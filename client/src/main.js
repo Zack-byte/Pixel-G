@@ -9,6 +9,8 @@ import {
   hideMainMenu,
   goToMainMenu,
   hidePauseAndGoToMainMenu,
+  addGameOverMenu,
+  updateEnemySpeed,
 } from "./core/modules/ui.js";
 import { initiateGameLoop, loadCodex } from "./core/modules/gameLoop.js";
 import { attachGameControls, removeGameControls } from "./core/modules/input.js";
@@ -156,3 +158,4 @@ window.goToMainMenu = goToMainMenu;
 window.hidePauseAndGoToMainMenu = hidePauseAndGoToMainMenu;
 window.attachGameControls = attachGameControls;
 window.removeGameControls = removeGameControls;
+window.updateEnemySpeed = updateEnemySpeed;

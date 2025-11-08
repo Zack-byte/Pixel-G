@@ -44,6 +44,38 @@ export const inputHandlers = {
   },
 
   contextmenuHandler: (e) => e.preventDefault(),
+
+  // Touch handlers for trackpad support
+  touchstartHandler: (event) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    if (touch) {
+      gameState.isMouseDown = true;
+      gameState.lastMousePosition = { x: touch.clientX, y: touch.clientY };
+      gameState.globalMousePos = { x: touch.clientX, y: touch.clientY };
+      updatePlayerFace();
+    }
+  },
+
+  touchmoveHandler: (event) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    if (touch) {
+      gameState.globalMousePos = { x: touch.clientX, y: touch.clientY };
+      updatePlayerFace();
+    }
+  },
+
+  touchendHandler: (event) => {
+    event.preventDefault();
+    gameState.isMouseDown = false;
+    gameState.lastMousePosition = null;
+
+    // Fire on touch end (like a tap)
+    if (event.changedTouches.length === 1) {
+      fire(true);
+    }
+  },
 };
 
 export function attachGameControls() {
@@ -53,6 +85,10 @@ export function attachGameControls() {
   document.addEventListener("mousedown", inputHandlers.mousedownHandler);
   document.addEventListener("mouseup", inputHandlers.mouseupHandler);
   document.addEventListener("contextmenu", inputHandlers.contextmenuHandler);
+  // Touch events for trackpad support
+  document.addEventListener("touchstart", inputHandlers.touchstartHandler);
+  document.addEventListener("touchmove", inputHandlers.touchmoveHandler);
+  document.addEventListener("touchend", inputHandlers.touchendHandler);
 }
 
 export function removeGameControls() {
@@ -62,4 +98,8 @@ export function removeGameControls() {
   document.removeEventListener("mousedown", inputHandlers.mousedownHandler);
   document.removeEventListener("mouseup", inputHandlers.mouseupHandler);
   document.removeEventListener("contextmenu", inputHandlers.contextmenuHandler);
+  // Remove touch events
+  document.removeEventListener("touchstart", inputHandlers.touchstartHandler);
+  document.removeEventListener("touchmove", inputHandlers.touchmoveHandler);
+  document.removeEventListener("touchend", inputHandlers.touchendHandler);
 }

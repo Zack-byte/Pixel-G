@@ -1,4 +1,4 @@
-import { gameState } from "./config.js";
+import { gameState, config } from "./config.js";
 
 export function toggleSettings() {
   const settingsMenu = document.getElementById("settingsMenu");
@@ -7,6 +7,14 @@ export function toggleSettings() {
 
   hideMenus();
   settingsMenu.style.display = "flex";
+
+  // Initialize slider values
+  const enemySpeedSlider = document.getElementById("enemySpeedControl");
+  const enemySpeedValue = document.getElementById("enemySpeedValue");
+  if (enemySpeedSlider && enemySpeedValue) {
+    enemySpeedSlider.value = config.enemyMoveSpeed;
+    enemySpeedValue.textContent = config.enemyMoveSpeed;
+  }
 
   if (!wasInPauseMenu) {
     gameState.paused = true;
@@ -134,3 +142,39 @@ export function hideMultiPlayerMenu() {
     menu.style.display = "none";
   }, 500);
 }
+
+export function addGameOverMenu() {
+  const gameOverMenu = document.getElementById("gameOverMenu");
+  const gameOverScore = document.getElementById("gameOverScore");
+  const gameUI = document.getElementById("gameUI");
+
+  // Update the score display
+  gameOverScore.textContent = `Score: ${gameState.score}`;
+
+  // Hide game UI and show game over menu
+  gameUI.classList.remove("visible");
+  gameOverMenu.style.display = "flex";
+}
+
+export function removeGameOverMenu() {
+  const gameOverMenu = document.getElementById("gameOverMenu");
+  if (gameOverMenu) {
+    gameOverMenu.style.display = "none";
+  }
+}
+
+export function updateEnemySpeed(value) {
+  config.enemyMoveSpeed = parseInt(value);
+  const speedValue = document.getElementById("enemySpeedValue");
+  if (speedValue) {
+    speedValue.textContent = value;
+  }
+}
+
+// Expose functions to global window object
+window.togglePause = togglePause;
+window.toggleSettings = toggleSettings;
+window.closeSettings = closeSettings;
+window.goToMainMenu = goToMainMenu;
+window.hidePauseAndGoToMainMenu = hidePauseAndGoToMainMenu;
+window.updateEnemySpeed = updateEnemySpeed;

@@ -39,6 +39,12 @@ export function updatePlayerPosition(isPlayerControlled, playerId) {
   );
 }
 
+export function getPlayerPosition() {
+  const player = document.getElementById("player");
+  if (!player) return null;
+  return { x: playerX, y: playerY };
+}
+
 export function updatePlayerFace() {
   const player = document.getElementById("player");
   if (!player) return;
@@ -51,9 +57,7 @@ export function updatePlayerFace() {
     gameState.globalMousePos.y - playerCenterY,
     gameState.globalMousePos.x - playerCenterX
   );
-  const angleDeg = (angleRad * 180) / Math.PI + 90;
-
-  player.style.transform = `rotate(${angleDeg}deg)`;
+  playerRotation = (angleRad * 180) / Math.PI + 90;
 }
 
 function handlePlayerMovement(isPlayerControlled) {

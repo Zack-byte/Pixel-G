@@ -2,6 +2,7 @@ import { gameState, config } from "./config.js";
 import { playAudio } from "./audio.js";
 import { endRound } from "./gameLoop.js";
 import { playerX, playerY, playerRotation } from "./player.js";
+import { updateScore } from "./ui.js";
 
 export function fire(isPlayer) {
   const gameArea = document.getElementById("root");
@@ -90,7 +91,10 @@ function movePlayerBullet(bullet, interval) {
 
   bullet.style.top = newTop + "px";
   bullet.style.left = newLeft + "px";
-  checkBulletOverlap(bullet);
+  const hit = checkBulletOverlap(bullet, interval);
+  if (hit) {
+    return;
+  }
 }
 
 function moveEnemyBullet(bullet, interval) {
@@ -101,7 +105,10 @@ function moveEnemyBullet(bullet, interval) {
     return;
   }
   bullet.style.top = top + config.bulletSpeed * gameState.scaleHeight + "px";
-  checkBulletOverlap(bullet);
+  const hit = checkBulletOverlap(bullet, interval);
+  if (hit) {
+    return;
+  }
 }
 
 function isOutOfBounds(top, left) {
@@ -110,21 +117,42 @@ function isOutOfBounds(top, left) {
   );
 }
 
-export function checkBulletOverlap(bullet) {
+export function checkBulletOverlap(bullet, interval) {
+  console.log("checkBulletOverlap called, isMultiplayer:", gameState.isMultiplayer);
   const b = bullet.getBoundingClientRect();
   if (!gameState.isMultiplayer) {
-    checkEnemyOverlap(b, bullet);
+    const hit = checkEnemyOverlap(b, bullet, interval);
+    return hit;
+  } else {
+    console.log("Skipping enemy overlap check - multiplayer mode");
   }
+  return false;
 }
 
-function checkEnemyOverlap(b, bullet) {
+function checkEnemyOverlap(b, bullet, interval) {
   const toRemove = [];
+  console.log("Checking bullet overlap, active enemies:", gameState.activeEnemies.length);
+  let hit = false;
+
   gameState.activeEnemies.forEach((e) => {
-    if (isOverlapping(b, e)) {
+    // Get the actual DOM element position for more accurate collision detection
+    const enemyElement = document.getElementById(e.id);
+    if (!enemyElement) {
+      console.log("Enemy element not found:", e.id);
+      return;
+    }
+
+    const enemyRect = enemyElement.getBoundingClientRect();
+    console.log("Bullet rect:", b, "Enemy rect:", enemyRect);
+
+    if (isOverlapping(b, enemyRect)) {
+      console.log("COLLISION DETECTED! Enemy hit:", e.id);
       updateScore(e.score);
       toRemove.push(e.id);
       gameState.remainingEnemies -= 1;
       bullet.remove();
+      clearInterval(interval);
+      hit = true;
       playAudio("explosion");
     }
   });
@@ -142,13 +170,15 @@ function checkEnemyOverlap(b, bullet) {
     gameState.betweenRounds = true;
     endRound();
   }
+
+  return hit;
 }
 
 function isOverlapping(rect1, rect2) {
   return (
-    ((rect2.left <= rect1.left && rect1.left <= rect2.right) ||
-      (rect2.left <= rect1.right && rect1.right <= rect2.right)) &&
-    ((rect2.top <= rect1.bottom && rect1.bottom <= rect2.bottom) ||
-      (rect2.top <= rect1.top && rect1.top <= rect2.bottom))
+    rect1.left < rect2.right &&
+    rect1.right > rect2.left &&
+    rect1.top < rect2.bottom &&
+    rect1.bottom > rect2.top
   );
 }

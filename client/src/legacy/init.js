@@ -1,7 +1,7 @@
 // Initialize all event listeners
-import { play } from "./endless.js";
-import { mpInit } from "./multiplayer.js";
-import { toggleSettings, goToMainMenu } from "./src/modules/ui.js";
+import { play } from "../modes/endless.js";
+import { mpInit } from "../modes/multiplayer.js";
+import { toggleSettings, goToMainMenu } from "../core/modules/ui.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Start button

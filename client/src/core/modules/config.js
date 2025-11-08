@@ -4,7 +4,7 @@ export const config = {
   normalizedWidth: 1920,
   enemyWidth: 40,
   enemyOffset: 40,
-  enemyMoveSpeed: 10,
+  enemyMoveSpeed: 2,
   bulletSpeed: 15,
   movementSpeed: 5,
 };

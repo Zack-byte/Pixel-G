@@ -1,13 +1,16 @@
-import { gameState } from "../core/modules/config.js";
+import { gameState, config } from "../core/modules/config.js";
 import {
   hideMainMenu,
   updateScore,
   hideMultiPlayerMenu,
   showRoundBanner,
   hideRoundBanner,
+  removeGameOverMenu,
 } from "../core/modules/ui.js";
-import { spawnPlayer, updateHealthUI } from "../core/modules/player.js";
+import { spawnPlayer, updateHealthUI, getPlayerPosition } from "../core/modules/player.js";
 import { attachGameControls } from "../core/modules/input.js";
+import { removeAllEnemies } from "../core/modules/enemy.js";
+import { endRound } from "../core/modules/gameLoop.js";
 
 export function play() {
   // Reset game state
@@ -80,7 +83,7 @@ function getRandomSpawnPosition(bounds) {
   const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
   const offset = 100; // Increased offset to ensure enemies start fully off-screen
   let left, top;
-  const enemyWidth = 40; // Use constant or import from config if needed
+  const enemyWidth = config.enemyWidth;
 
   switch (side) {
     case 0: // top
@@ -107,7 +110,7 @@ function spawnEnemy(left, top, spawnSide) {
   const gameArea = document.getElementById("root");
   const bounds = gameArea.getBoundingClientRect();
   let enemy = document.createElement("div");
-  const id = `Enemy${enemyNumber}`;
+  const id = `Enemy${gameState.enemyNumber}`;
 
   enemy.id = id;
   enemy.className = "enemy-ship";
@@ -132,15 +135,15 @@ function spawnEnemy(left, top, spawnSide) {
   }
   enemy.style.transform = `rotate(${rotation}deg)`;
 
-  enemyNumber++;
+  gameState.enemyNumber++;
 
-  activeEnemies.push({
+  gameState.activeEnemies.push({
     id: id,
     top: parseFloat(top),
     left: parseFloat(left),
-    bottom: parseFloat(top) + enemyWidth,
-    right: parseFloat(left) + enemyWidth,
-    score: 100 * roundNumber,
+    bottom: parseFloat(top) + config.enemyWidth,
+    right: parseFloat(left) + config.enemyWidth,
+    score: 100 * gameState.roundNumber,
     movementType: "chase",
   });
 
@@ -171,31 +174,35 @@ function enemyMove(enemy, interval, bounds, id) {
     ) {
       clearInterval(interval);
       enemy.remove();
-      const index = activeEnemies.findIndex((e) => e.id === id);
+      const index = gameState.activeEnemies.findIndex((e) => e.id === id);
       if (index !== -1) {
-        activeEnemies.splice(index, 1);
+        gameState.activeEnemies.splice(index, 1);
       }
-      remainingEnemies--;
+      gameState.remainingEnemies--;
 
-      if (remainingEnemies <= 0 && !betweenRounds) {
-        betweenRounds = true;
+      if (gameState.remainingEnemies <= 0 && !gameState.betweenRounds) {
+        gameState.betweenRounds = true;
         endRound();
       }
       return;
     }
 
-    if (!paused) {
-      const index = activeEnemies.findIndex((item) => item.id === id);
+    if (!gameState.paused) {
+      const index = gameState.activeEnemies.findIndex((item) => item.id === id);
       if (index === -1) return;
 
-      const enemyData = activeEnemies[index];
-      const speedMultiplier = 1 + (roundNumber - 1) * 0.2;
+      const enemyData = gameState.activeEnemies[index];
+      const speedMultiplier = 1 + (gameState.roundNumber - 1) * 0.2;
 
-      const dx = playerX - currentLeft;
-      const dy = playerY - currentTop;
+      // Get player position
+      const playerPos = getPlayerPosition();
+      if (!playerPos) return;
+
+      const dx = playerPos.x - currentLeft;
+      const dy = playerPos.y - currentTop;
       const distance = Math.hypot(dx, dy);
 
-      const speed = enemyMoveSpeed * speedMultiplier;
+      const speed = config.enemyMoveSpeed * speedMultiplier;
       const newLeft = currentLeft + (dx / distance) * speed;
       const newTop = currentTop + (dy / distance) * speed;
 
@@ -208,8 +215,8 @@ function enemyMove(enemy, interval, bounds, id) {
 
       enemyData.top = newTop;
       enemyData.left = newLeft;
-      enemyData.bottom = newTop + enemyWidth;
-      enemyData.right = newLeft + enemyWidth;
+      enemyData.bottom = newTop + config.enemyWidth;
+      enemyData.right = newLeft + config.enemyWidth;
     }
   } catch (error) {
     console.error("Error in enemyMove:", error);
@@ -219,9 +226,9 @@ function enemyMove(enemy, interval, bounds, id) {
 
 function restart() {
   // Clean up existing game state
-  removeActiveEnemies();
-  removePlayer();
-  removeGameControls();
+  removeAllEnemies();
+  const player = document.getElementById("player");
+  if (player) player.remove();
 
   // Clear any existing intervals and timeouts
   const highestId = window.setTimeout(() => {}, 0);
@@ -231,15 +238,15 @@ function restart() {
   }
 
   // Reset game variables
-  score = 0;
-  roundNumber = 1;
-  enemyNumber = 1;
-  activeEnemies = [];
-  remainingEnemies = 0;
-  playerHealth = 100;
-  paused = false;
-  gameStarted = true;
-  betweenRounds = false;
+  gameState.score = 0;
+  gameState.roundNumber = 1;
+  gameState.enemyNumber = 1;
+  gameState.activeEnemies = [];
+  gameState.remainingEnemies = 0;
+  gameState.playerHealth = 100;
+  gameState.paused = false;
+  gameState.gameStarted = true;
+  gameState.betweenRounds = false;
 
   // Update UI
   updateHealthUI();
@@ -253,7 +260,7 @@ function restart() {
   attachGameControls();
 
   // Start fresh game loop with round banner
-  showRoundBanner(`Round ${roundNumber}`);
+  showRoundBanner(`Round ${gameState.roundNumber}`);
   setTimeout(() => {
     hideRoundBanner();
     spawnWave();
@@ -262,6 +269,4 @@ function restart() {
 
 // Export functions that need to be accessible from other files
 window.play = play;
-window.gameOver = gameOver;
 window.restart = restart;
-window.updateScore = updateScore;
