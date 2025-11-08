@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Galaga</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="body-light">
+    <script type="module" src="../src/main.js"></script>
+    <script type="module" src="../src/legacy/init.js"></script>
+    <div id="root" class="root">
+      <audio id="audio" loop>
+        <source src="../assets/audio/backgroundtunes.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+      <div id="landing-page" class="landing-page">
+        <div
+          class="menu-container flex-center-center col menu-container-stage-left"
+        >
+          <h1>Pixel G</h1>
+          <button id="startButton" class="button-primary">Start</button>
+        </div>
+        <div class="shield-container">
+          <div class="ship-animation-container">
+            <div class="bullet bullet-1"></div>
+            <div class="bullet bullet-2"></div>
+            <img
+              class="player-scale-large"
+              src="../assets/sprites/player-ship.png"
+              alt="player"
+            />
+          </div>
+        </div>
+      </div>
+      <div id="mainMenu" class="mainMenu">
+        <div class="main-menu-container">
+          <h1>Pixel G</h1>
+          <div class="flex">
+            <button id="playEndless">Endless</button>
+            <button id="playMultiplayer">Multiplayer</button>
+            <button id="openSettings">Settings</button>
+          </div>
+        </div>
+      </div>
+      <div id="mpMenu" class="mp-menu">
+        <div class="main-menu-container">
+          <h1>Multiplayer</h1>
+          <div id="inputContainer" class="flex">
+            <input
+              id="userId"
+              placeholder="Enter Username"
+              type="text"
+              class="mp-input"
+            />
+            <button onclick="initiateSearch()">Play</button>
+            <button onclick="goToMainMenu()">Back</button>
+          </div>
+        </div>
+      </div>
+      <div id="pauseMenu" class="pause-menu">
+        <div class="main-menu-container">
+          <h1>Paused</h1>
+          <div class="flex">
+            <button onclick="togglePause()">Resume</button>
+            <button onclick="toggleSettings()">Settings</button>
+            <button onclick="hidePauseAndGoToMainMenu()">Main Menu</button>
+          </div>
+        </div>
+      </div>
+      <div id="gameOverMenu" class="game-over">
+        <div class="game-over-container">
+          <h1>Game Over</h1>
+          <h2 id="gameOverScore"></h2>
+          <div class="flex">
+            <button onclick="restart()">Play Again</button>
+            <button onclick="goToMainMenu()">Main Menu</button>
+          </div>
+        </div>
+      </div>
+      <div id="roundBanner" class="round-banner">
+        <h1 id="roundText"></h1>
+      </div>
+
+      <div id="gameUI" class="game-ui hidden">
+        <span id="score" class="score"> Score: 0 </span>
+        <progress
+          id="HealthBar"
+          class="health-bar"
+          value="100"
+          max="100"
+        ></progress>
+      </div>
+      <div id="settingsMenu" class="settings-menu">
+        <div class="main-menu-container">
+          <h1>Settings</h1>
+          <div class="settings-content">
+            <div class="setting-item">
+              <label for="volumeControl">Volume</label>
+              <input
+                type="range"
+                id="volumeControl"
+                min="0"
+                max="100"
+                value="100"
+                class="slider"
+              />
+            </div>
+            <div class="setting-item">
+              <label>Theme</label>
+              <div class="theme-buttons">
+                <button
+                  onclick="setTheme('light')"
+                  class="theme-button light-theme"
+                >
+                  Light
+                </button>
+                <button
+                  onclick="setTheme('dark')"
+                  class="theme-button dark-theme"
+                >
+                  Dark
+                </button>
+              </div>
+            </div>
+            <div class="setting-item">
+              <label>Controls</label>
+              <div class="controls-info">
+                <p>WASD - Move ship</p>
+                <p>Space/Right Click - Fire</p>
+                <p>P - Pause game</p>
+              </div>
+            </div>
+            <button onclick="closeSettings()" class="back-button">Back</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
