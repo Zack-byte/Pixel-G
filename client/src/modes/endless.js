@@ -224,7 +224,7 @@ function enemyMove(enemy, interval, bounds, id) {
   }
 }
 
-function restart() {
+export function restart() {
   // Clean up existing game state
   removeAllEnemies();
   const player = document.getElementById("player");

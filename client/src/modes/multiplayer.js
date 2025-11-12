@@ -17,7 +17,7 @@ export function mpInit() {
   showMultiPlayerMenu();
 }
 
-function initiateSearch() {
+export function initiateSearch() {
   user_id = getUserId();
   if (!user_id.trim()) {
     return; // Don't proceed if username is empty

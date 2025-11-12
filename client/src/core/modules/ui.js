@@ -1,4 +1,4 @@
-import { gameState, config } from "./config.js";
+import { gameState, config, ships } from "./config.js";
 
 export function toggleSettings() {
   const settingsMenu = document.getElementById("settingsMenu");
@@ -14,6 +14,13 @@ export function toggleSettings() {
   if (enemySpeedSlider && enemySpeedValue) {
     enemySpeedSlider.value = config.enemyMoveSpeed;
     enemySpeedValue.textContent = config.enemyMoveSpeed;
+  }
+
+  const playerSpeedSlider = document.getElementById("playerSpeedControl");
+  const playerSpeedValue = document.getElementById("playerSpeedValue");
+  if (playerSpeedSlider && playerSpeedValue) {
+    playerSpeedSlider.value = config.movementSpeed;
+    playerSpeedValue.textContent = config.movementSpeed;
   }
 
   if (!wasInPauseMenu) {
@@ -77,8 +84,10 @@ export function hideMainMenu() {
 function hideMenus() {
   const pauseMenu = document.getElementById("pauseMenu");
   const mainMenu = document.getElementById("mainMenu");
+  const hangerMenu = document.getElementById("hangerMenu");
   mainMenu.style.display = "none";
   pauseMenu.style.display = "none";
+  hangerMenu.style.display = "none";
 }
 
 export function goToMainMenu() {
@@ -106,6 +115,20 @@ export function goToMainMenu() {
     setTimeout(() => {
       landingPage.style.display = "none";
     }, 500);
+  }, 300);
+}
+
+export function goToLandingPage() {
+  // Hide main menu
+  const mainMenu = document.getElementById("mainMenu");
+  const landingPage = document.getElementById("landing-page");
+
+  mainMenu.classList.remove("fade-in");
+
+  setTimeout(() => {
+    mainMenu.style.display = "none";
+    landingPage.style.display = "flex";
+    landingPage.classList.remove("fade-out");
   }, 300);
 }
 
@@ -171,10 +194,114 @@ export function updateEnemySpeed(value) {
   }
 }
 
+export function updatePlayerSpeed(value) {
+  config.movementSpeed = parseInt(value);
+  const speedValue = document.getElementById("playerSpeedValue");
+  if (speedValue) {
+    speedValue.textContent = value;
+  }
+}
+
+export function toggleHanger() {
+  const hangerMenu = document.getElementById("hangerMenu");
+  const wasInPauseMenu = document.getElementById("pauseMenu").style.display === "flex";
+
+  hideMenus();
+  hangerMenu.style.display = "flex";
+
+  // Initialize ship selection UI
+  updateShipSelectionUI();
+
+  if (!wasInPauseMenu) {
+    gameState.paused = true;
+  }
+}
+
+export function closeHanger() {
+  const hangerMenu = document.getElementById("hangerMenu");
+  hangerMenu.style.display = "none";
+
+  if (gameState.gameStarted) {
+    const pauseMenu = document.getElementById("pauseMenu");
+    pauseMenu.style.display = "flex";
+  } else {
+    const mainMenu = document.getElementById("mainMenu");
+    mainMenu.style.display = "flex";
+    mainMenu.classList.add("fade-in");
+    gameState.paused = false;
+  }
+}
+
+export function previousShip() {
+  gameState.selectedShipIndex = (gameState.selectedShipIndex - 1 + ships.length) % ships.length;
+  updateShipSelectionUI();
+  saveSelectedShip();
+}
+
+export function nextShip() {
+  gameState.selectedShipIndex = (gameState.selectedShipIndex + 1) % ships.length;
+  updateShipSelectionUI();
+  saveSelectedShip();
+}
+
+function updateShipSelectionUI() {
+  updateAllShipDisplays();
+}
+
+function saveSelectedShip() {
+  localStorage.setItem("selectedShipIndex", gameState.selectedShipIndex.toString());
+}
+
+export function loadSelectedShip() {
+  const savedShipIndex = localStorage.getItem("selectedShipIndex");
+  if (savedShipIndex !== null) {
+    const index = parseInt(savedShipIndex);
+    if (index >= 0 && index < ships.length) {
+      gameState.selectedShipIndex = index;
+    }
+  }
+  // Update all ship displays after loading
+  updateAllShipDisplays();
+}
+
+export function getSelectedShip() {
+  return ships[gameState.selectedShipIndex];
+}
+
+function updateAllShipDisplays() {
+  const selectedShip = ships[gameState.selectedShipIndex];
+
+  // Update landing page ship
+  const landingShip = document.querySelector(".landing-page .player-scale-large");
+  if (landingShip) {
+    landingShip.src = selectedShip.image;
+    landingShip.alt = selectedShip.name;
+  }
+
+  // Update hanger preview (if hanger is open)
+  const shipPreviewImage = document.getElementById("shipPreviewImage");
+  if (shipPreviewImage) {
+    shipPreviewImage.src = selectedShip.image;
+    shipPreviewImage.alt = selectedShip.name;
+  }
+
+  // Update hanger ship name (if hanger is open)
+  const shipNameElement = document.getElementById("selectedShipName");
+  if (shipNameElement) {
+    shipNameElement.textContent = selectedShip.name;
+  }
+}
+
 // Expose functions to global window object
 window.togglePause = togglePause;
 window.toggleSettings = toggleSettings;
 window.closeSettings = closeSettings;
 window.goToMainMenu = goToMainMenu;
+window.goToLandingPage = goToLandingPage;
 window.hidePauseAndGoToMainMenu = hidePauseAndGoToMainMenu;
 window.updateEnemySpeed = updateEnemySpeed;
+window.updatePlayerSpeed = updatePlayerSpeed;
+window.toggleHanger = toggleHanger;
+window.closeHanger = closeHanger;
+window.previousShip = previousShip;
+window.nextShip = nextShip;

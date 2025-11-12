@@ -34,7 +34,6 @@ function spawnWave() {
 }
 
 export function endRound() {
-  playAudio("nootnoot");
   showRoundBanner("Cleared");
   setTimeout(() => {
     gameState.roundNumber += 1;
