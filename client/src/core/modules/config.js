@@ -8,17 +8,17 @@ export const config = {
   bulletSpeed: 15,
   movementSpeed: 12,
   // Environment variables with fallbacks
-  serverHost: import.meta.env.VITE_SERVER_HOST || 'localhost',
+  serverHost: import.meta.env.VITE_SERVER_HOST || "localhost",
   serverPort: import.meta.env.VITE_SERVER_PORT || 8080,
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
-  wsUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:3000',
+  apiUrl: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  wsUrl: import.meta.env.VITE_WS_URL || "ws://localhost:3000",
   defaultVolume: parseInt(import.meta.env.VITE_DEFAULT_VOLUME) || 100,
   defaultEnemySpeed: parseInt(import.meta.env.VITE_DEFAULT_ENEMY_SPEED) || 10,
   defaultPlayerSpeed: parseInt(import.meta.env.VITE_DEFAULT_PLAYER_SPEED) || 8,
-  enableClouds: import.meta.env.VITE_ENABLE_CLOUDS !== 'false',
-  defaultTheme: import.meta.env.VITE_DEFAULT_THEME || 'light',
-  enableMultiplayer: import.meta.env.VITE_ENABLE_MULTIPLAYER !== 'false',
-  enableDebug: import.meta.env.VITE_ENABLE_DEBUG === 'true'
+  enableClouds: import.meta.env.VITE_ENABLE_CLOUDS !== "false",
+  defaultTheme: import.meta.env.VITE_DEFAULT_THEME || "light",
+  enableMultiplayer: import.meta.env.VITE_ENABLE_MULTIPLAYER !== "false",
+  enableDebug: import.meta.env.VITE_ENABLE_DEBUG === "true",
 };
 
 // Ship configuration
@@ -26,28 +26,28 @@ export const ships = [
   {
     id: "player-ship",
     name: "Player Ship",
-    image: "/assets/sprites/player-ship.png"
+    image: "/sprites/player-ship.png",
   },
   {
     id: "player-ship-2",
     name: "Player Ship 2",
-    image: "/assets/sprites/player-ship-2.png"
+    image: "/sprites/player-ship-2.png",
   },
   {
     id: "player-ship-3",
     name: "Player Ship 3",
-    image: "/assets/sprites/player-ship-3.png"
+    image: "/sprites/player-ship-3.png",
   },
   {
     id: "player-ship-4",
     name: "Player Ship 4",
-    image: "/assets/sprites/player-ship-4.png"
+    image: "/sprites/player-ship-4.png",
   },
   {
     id: "player-ship-5",
     name: "Player Ship 5",
-    image: "/assets/sprites/player-ship-5.png"
-  }
+    image: "/sprites/player-ship-5.png",
+  },
 ];
 
 // Core game state

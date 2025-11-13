@@ -34,6 +34,7 @@ function spawnWave() {
 }
 
 export function endRound() {
+  playAudio("Level_Indicator");
   showRoundBanner("Cleared");
   setTimeout(() => {
     gameState.roundNumber += 1;
@@ -47,7 +48,7 @@ export function endRound() {
 }
 
 export function loadCodex() {
-  fetch("../assets/data/enemy-layout.json")
+  fetch("/data/enemy-layout.json")
     .then((result) => result.json())
     .then((result) => {
       gameState.enemyCodex = result;

@@ -1,17 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html>
   <head>
     <title>Galaga</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Orbit&family=Orbitron:wght@400..900&family=VT323&family=WDXL+Lubrifont+SC&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Orbit&family=Orbitron:wght@400..900&family=VT323&family=WDXL+Lubrifont+SC&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body class="body-light">
     <div id="root" class="root">
       <audio id="audio" loop>
-        <source src="/assets/audio/backgroundtunes.mp3" type="audio/mpeg" />
+        <source src="/audio/backgroundtunes.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
       <div id="landing-page" class="landing-page">
@@ -27,7 +30,7 @@
           <div class="ship-animation-container">
             <img
               class="player-scale-large"
-              src="/assets/sprites/player-ship.png"
+              src="/sprites/player-ship.png"
               alt="player"
             />
           </div>
@@ -154,10 +157,7 @@
                 >
                   Enabled
                 </button>
-                <button
-                  class="theme-button cloud-disabled"
-                  id="cloudDisabled"
-                >
+                <button class="theme-button cloud-disabled" id="cloudDisabled">
                   Disabled
                 </button>
               </div>
@@ -165,16 +165,8 @@
             <div class="setting-item">
               <label>Theme</label>
               <div class="theme-buttons">
-                <button
-                  class="theme-button light-theme"
-                >
-                  Light
-                </button>
-                <button
-                  class="theme-button dark-theme"
-                >
-                  Dark
-                </button>
+                <button class="theme-button light-theme">Light</button>
+                <button class="theme-button dark-theme">Dark</button>
               </div>
             </div>
             <div class="setting-item">
@@ -202,7 +194,11 @@
               <div class="ship-preview-container">
                 <button id="prevShipBtn" class="ship-nav-btn">&lt;</button>
                 <div class="ship-preview">
-                  <img id="shipPreviewImage" src="/assets/sprites/player-ship.png" alt="Selected Ship" />
+                  <img
+                    id="shipPreviewImage"
+                    src="/sprites/player-ship.png"
+                    alt="Selected Ship"
+                  />
                 </div>
                 <button id="nextShipBtn" class="ship-nav-btn">&gt;</button>
               </div>

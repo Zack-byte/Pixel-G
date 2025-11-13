@@ -20,8 +20,14 @@ import {
   showMultiPlayerMenu,
 } from "./core/modules/ui.js";
 import { initiateGameLoop, loadCodex } from "./core/modules/gameLoop.js";
-import { attachGameControls, removeGameControls } from "./core/modules/input.js";
-import { initializeEventHandlers } from "./core/modules/eventHandlers.js";
+import {
+  attachGameControls,
+  removeGameControls,
+} from "./core/modules/input.js";
+import {
+  initializeEventHandlers,
+  addHoverSoundsToNewButtons,
+} from "./core/modules/eventHandlers.js";
 import { play as playEndless, restart } from "./modes/endless.js";
 import { initiateSearch } from "./modes/multiplayer.js";
 
@@ -44,6 +50,7 @@ window.toggleHanger = toggleHanger;
 window.closeHanger = closeHanger;
 window.previousShip = previousShip;
 window.nextShip = nextShip;
+window.addHoverSoundsToNewButtons = addHoverSoundsToNewButtons;
 
 // Game mode functions
 window.startEndlessMode = playEndless;
@@ -79,7 +86,8 @@ function initializeSettings() {
 
   // Apply saved cloud setting
   const savedCloudSetting = localStorage.getItem("showClouds");
-  const showClouds = savedCloudSetting === null ? true : savedCloudSetting === "true";
+  const showClouds =
+    savedCloudSetting === null ? true : savedCloudSetting === "true";
   setClouds(showClouds);
 
   initAudio();
@@ -224,7 +232,7 @@ function initializeTitleCarousel() {
   const fontData = [
     { font: "Orbitron", text: "Pixel G" },
     { font: "Orbit", text: "ピクセルファイター" },
-    { font: "WDXL Lubrifont SC", text: "픽셀 파이터" }
+    { font: "WDXL Lubrifont SC", text: "픽셀 파이터" },
   ];
   let currentFontIndex = 0;
   let carouselInterval;
@@ -272,10 +280,12 @@ function initializeTitleCarousel() {
   // Monitor landing page visibility
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes') {
+      if (mutation.type === "attributes") {
         const landingPage = document.getElementById("landing-page");
         if (landingPage) {
-          const isHidden = landingPage.style.display === "none" || landingPage.classList.contains("fade-out");
+          const isHidden =
+            landingPage.style.display === "none" ||
+            landingPage.classList.contains("fade-out");
           if (isHidden) {
             stopCarousel();
           } else {
@@ -290,7 +300,7 @@ function initializeTitleCarousel() {
   if (landingPage) {
     observer.observe(landingPage, {
       attributes: true,
-      attributeFilter: ['style', 'class']
+      attributeFilter: ["style", "class"],
     });
 
     // Initialize first title with proper animation class

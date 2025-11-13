@@ -32,7 +32,7 @@
 }
 
 .body-dark .root {
-    background-image: url('../assets/sprites/Japanese-Cyberpunk-Background-Dark.png');
+    background-image: url('/sprites/Japanese-Cyberpunk-Background-Dark.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -49,7 +49,7 @@
 }
 
 .body-light .root {
-    background-image: url('../assets/sprites/Japanese-Background-Light.png');
+    background-image: url('/sprites/Japanese-Background-Light.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -476,7 +476,7 @@ button {
 .enemy-ship {
     width: 40px;
     height: 40px;
-    background-image: url('../assets/sprites/enemy-ship.png');
+    background-image: url('/sprites/enemy-ship.png');
     position: absolute;
     background-size: contain;
     background-position: center center;
@@ -503,7 +503,7 @@ button {
     top: 0;
     width: 80px;
     height: 60px;
-    background-image: url('../assets/sprites/cloud.png');
+    background-image: url('/sprites/cloud.png');
     position: absolute;
     background-size: contain;
     background-position: center center;
