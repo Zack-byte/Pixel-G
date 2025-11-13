@@ -23,6 +23,7 @@ import { initiateGameLoop, loadCodex } from "./core/modules/gameLoop.js";
 import {
   attachGameControls,
   removeGameControls,
+  stopContinuousFiring,
 } from "./core/modules/input.js";
 import {
   initializeEventHandlers,
@@ -168,6 +169,9 @@ function spawnClouds() {
 }
 
 function cleanupGameplay() {
+  // Stop any continuous firing
+  stopContinuousFiring();
+
   // Reset game state
   gameState.paused = false;
   gameState.gameStarted = false;

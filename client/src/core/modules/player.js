@@ -24,7 +24,10 @@ export function spawnPlayer(isPlayerControlled = true, playerId) {
   // Use viewport-based sizing to match loading screen (8vw, max 100px)
   const baseVwSize = isPlayerControlled ? 8 : 10; // Player 2 gets 10vw for larger size
   const maxSize = isPlayerControlled ? 100 : 125; // Player 2 gets larger max size
-  const viewportSize = Math.min(window.innerWidth * (baseVwSize / 100), maxSize);
+  const viewportSize = Math.min(
+    window.innerWidth * (baseVwSize / 100),
+    maxSize
+  );
 
   player.style.width = viewportSize + "px";
   player.style.height = viewportSize + "px";
@@ -83,15 +86,20 @@ export function updatePlayerFace() {
 function handlePlayerMovement(isPlayerControlled) {
   if (!isPlayerControlled) return;
 
+  // Always update player face direction to track mouse
+  updatePlayerFace();
+
   // Calculate target velocity based on input
   let targetVelocityX = 0;
   let targetVelocityY = 0;
 
   // Keyboard movement - apply acceleration toward target velocity
-  if (keysPressed["w"]) targetVelocityY = -config.movementSpeed * gameState.scaleHeight;
-  if (keysPressed["s"]) targetVelocityY = config.movementSpeed * gameState.scaleHeight;
-  if (keysPressed["a"]) targetVelocityX = -config.movementSpeed * gameState.scaleWidth;
-  if (keysPressed["d"]) targetVelocityX = config.movementSpeed * gameState.scaleWidth;
+  // Use consistent scaling for both horizontal and vertical movement
+  const movementScale = Math.min(gameState.scaleWidth, gameState.scaleHeight);
+  if (keysPressed["w"]) targetVelocityY = -config.movementSpeed * movementScale;
+  if (keysPressed["s"]) targetVelocityY = config.movementSpeed * movementScale;
+  if (keysPressed["a"]) targetVelocityX = -config.movementSpeed * movementScale;
+  if (keysPressed["d"]) targetVelocityX = config.movementSpeed * movementScale;
 
   // Apply acceleration toward target velocity
   playerVelocityX += (targetVelocityX - playerVelocityX) * acceleration;

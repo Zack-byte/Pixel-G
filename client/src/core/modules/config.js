@@ -73,4 +73,7 @@ export const gameState = {
   playerShotsFired: 0,
   cloudsEnabled: true,
   selectedShipIndex: 0,
+  // Firing state
+  isFiring: false,
+  fireInterval: null,
 };

@@ -6,8 +6,15 @@ export const inputHandlers = {
   keydownHandler: (event) => {
     keysPressed[event.key.toLowerCase()] = true;
 
-    if (event.code === "Space") {
-      fire(true);
+    if (event.code === "Space" && !gameState.isFiring) {
+      // Start continuous firing
+      gameState.isFiring = true;
+      fire(true); // Fire immediately
+      gameState.fireInterval = setInterval(() => {
+        if (gameState.isFiring) {
+          fire(true);
+        }
+      }, 150); // Fire every 150ms while held
     }
 
     if (event.key === "p" && gameState.gameStarted) {
@@ -17,11 +24,19 @@ export const inputHandlers = {
 
   keyupHandler: (event) => {
     keysPressed[event.key.toLowerCase()] = false;
+
+    if (event.code === "Space" && gameState.isFiring) {
+      // Stop continuous firing
+      gameState.isFiring = false;
+      if (gameState.fireInterval) {
+        clearInterval(gameState.fireInterval);
+        gameState.fireInterval = null;
+      }
+    }
   },
 
   mousemoveHandler: (event) => {
     gameState.globalMousePos = { x: event.clientX, y: event.clientY };
-    updatePlayerFace();
   },
 
   mousedownHandler: (event) => {
@@ -29,6 +44,7 @@ export const inputHandlers = {
       // Left click
       gameState.isMouseDown = true;
       gameState.lastMousePosition = { x: event.clientX, y: event.clientY };
+      fire(true);
     } else if (event.button === 2) {
       // Right click
       fire(true);
@@ -53,7 +69,6 @@ export const inputHandlers = {
       gameState.isMouseDown = true;
       gameState.lastMousePosition = { x: touch.clientX, y: touch.clientY };
       gameState.globalMousePos = { x: touch.clientX, y: touch.clientY };
-      updatePlayerFace();
     }
   },
 
@@ -62,7 +77,6 @@ export const inputHandlers = {
     const touch = event.touches[0];
     if (touch) {
       gameState.globalMousePos = { x: touch.clientX, y: touch.clientY };
-      updatePlayerFace();
     }
   },
 
@@ -92,6 +106,9 @@ export function attachGameControls() {
 }
 
 export function removeGameControls() {
+  // Stop continuous firing if active
+  stopContinuousFiring();
+
   document.removeEventListener("keydown", inputHandlers.keydownHandler);
   document.removeEventListener("keyup", inputHandlers.keyupHandler);
   document.removeEventListener("mousemove", inputHandlers.mousemoveHandler);
@@ -102,4 +119,12 @@ export function removeGameControls() {
   document.removeEventListener("touchstart", inputHandlers.touchstartHandler);
   document.removeEventListener("touchmove", inputHandlers.touchmoveHandler);
   document.removeEventListener("touchend", inputHandlers.touchendHandler);
+}
+
+export function stopContinuousFiring() {
+  gameState.isFiring = false;
+  if (gameState.fireInterval) {
+    clearInterval(gameState.fireInterval);
+    gameState.fireInterval = null;
+  }
 }

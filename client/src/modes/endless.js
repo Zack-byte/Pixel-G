@@ -7,8 +7,15 @@ import {
   hideRoundBanner,
   removeGameOverMenu,
 } from "../core/modules/ui.js";
-import { spawnPlayer, updateHealthUI, getPlayerPosition } from "../core/modules/player.js";
-import { attachGameControls } from "../core/modules/input.js";
+import {
+  spawnPlayer,
+  updateHealthUI,
+  getPlayerPosition,
+} from "../core/modules/player.js";
+import {
+  attachGameControls,
+  stopContinuousFiring,
+} from "../core/modules/input.js";
 import { removeAllEnemies } from "../core/modules/enemy.js";
 import { endRound } from "../core/modules/gameLoop.js";
 
@@ -225,6 +232,9 @@ function enemyMove(enemy, interval, bounds, id) {
 }
 
 export function restart() {
+  // Stop any continuous firing
+  stopContinuousFiring();
+
   // Clean up existing game state
   removeAllEnemies();
   const player = document.getElementById("player");
